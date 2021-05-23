@@ -1,10 +1,21 @@
 TARGET = server
+ENTRY  = app.ts
 
-build:
-	deno compile -o bin/$(TARGET) --allow-all --unstable --config ./tsconfig.json app.ts
+FLAGS   = --allow-all --unstable --config ./tsconfig.json
 
-release:
-	deno compile -o bin/$(TARGET) --allow-all --unstable --config ./tsconfig.json --lite app.ts
+TARGETS = x86_64-unknown-linux-gnu x86_64-pc-windows-msvc x86_64-apple-darwin
 
 run:
-	deno run --allow-all --config ./tsconfig.json app.ts
+	deno run $(FLAGS) $(ENTRY)
+
+build:
+	deno compile -o bin/$(TARGET) $(FLAGS) $(ENTRY)
+
+matrix:
+	@for target in $(TARGETS); do                                                      \
+	  echo Building $${target};                                                        \
+		if [ ! -d bin/$${target} ]; then                                                 \
+			mkdir bin/$${target};                                                          \
+		fi;                                                                              \
+	  deno compile -o bin/$${target}/$(TARGET) $(FLAGS) --target $${target} $(ENTRY);  \
+	done
